@@ -7,7 +7,10 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('dist'));
+
+app.get('/', (req, res) => {
+  res.send('Forge API is running');
+});
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -178,10 +181,6 @@ ${conversationText}`;
     const fallback = createFallbackReport(conversationHistory);
     return res.json(fallback);
   }
-});
-
-app.get('*', (req, res) => {
-  res.sendFile('index.html', { root: 'dist' });
 });
 
 app.listen(PORT, () => {
