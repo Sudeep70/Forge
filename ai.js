@@ -23,7 +23,7 @@
  * ─────────────────────────────────────────────────────────────────
  */
 
-const API_BASE = ''; // Empty = same origin (proxied through Express in dev, served in prod)
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 /**
  * sendMessage — streams a character response into a callback
@@ -35,7 +35,7 @@ const API_BASE = ''; // Empty = same origin (proxied through Express in dev, ser
  */
 export async function sendMessage(messages, scenarioContext, onDelta, onError) {
   try {
-    const response = await fetch(`${API_BASE}/api/chat`, {
+    const response = await fetch(`${BASE_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages, scenarioContext }),
@@ -90,7 +90,7 @@ export async function sendMessage(messages, scenarioContext, onDelta, onError) {
  * @returns {Promise<Object>} - the judgment map JSON
  */
 export async function generateDebrief(conversationHistory) {
-  const response = await fetch(`${API_BASE}/api/debrief`, {
+  const response = await fetch(`${BASE_URL}/api/debrief`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ conversationHistory }),
