@@ -27,13 +27,61 @@ const CHAT_FALLBACKS = [
 ];
 
 function createFallbackReport(conversationHistory = []) {
-  const text = conversationHistory.map(m => m.content.toLowerCase()).join(' ');
-  
-  // Keyword-based score adjustment
-  let transparencyBase = 60;
-  let decisivenessBase = 70;
-  if (text.includes('hide') || text.includes('quiet') || text.includes('delay')) transparencyBase -= 15;
-  if (text.includes('decide') || text.includes('act') || text.includes('move fast')) decisivenessBase += 15;
+  const userMessages = conversationHistory
+    .filter(m => m.role === "user")
+    .map(m => m.content.toLowerCase());
+  const text = userMessages.join(" ");
+
+  let transparency = 50;
+  let decisiveness = 50;
+  let empathy = 50;
+  let risk_awareness = 50;
+  let integrity = 50;
+
+  // Step 2: Initialize signals
+  let intent = 0; // -1 conceal, +1 disclose
+  let urgency = 0; // -1 delay, +1 act fast
+  let empathySignal = 0; // -1 harsh, +1 considerate
+  let quality = 0; // -1 poor input, +1 meaningful
+
+  // Step 3: Detect patterns (Intent, Urgency, Empathy, Quality)
+  if (text.match(/hide|cover|quiet|not tell/)) intent -= 1;
+  if (text.match(/report|inform|disclose|tell/)) intent += 1;
+
+  if (text.match(/wait|later|delay/)) urgency -= 1;
+  if (text.match(/now|immediately|act/)) urgency += 1;
+
+  if (text.match(/users|team|impact|people/)) empathySignal += 1;
+  if (text.match(/!{2,}|fuck|shit|idiot|stupid/)) empathySignal -= 2;
+
+  if (text.length > 40) quality += 1;
+  if (text.length < 10) quality -= 1;
+
+  // Step 4: Map signals to scores
+  transparency += intent * 20;
+  decisiveness += urgency * 15;
+  empathy += empathySignal * 15;
+  integrity += intent * 10;
+  risk_awareness += (text.includes("risk") ? 15 : 0);
+
+  // Step 5: Penalize weak input
+  if (quality < 0) {
+    transparency -= 10;
+    empathy -= 10;
+    decisiveness -= 5;
+  }
+
+  const clamp = (v) => Math.max(0, Math.min(100, v));
+
+  // Add slight variation for realism
+  transparency = clamp(transparency + Math.floor(Math.random() * 6 - 3));
+  decisiveness = clamp(decisiveness + Math.floor(Math.random() * 6 - 3));
+  empathy = clamp(empathy + Math.floor(Math.random() * 6 - 3));
+  risk_awareness = clamp(risk_awareness + Math.floor(Math.random() * 6 - 3));
+  integrity = clamp(integrity + Math.floor(Math.random() * 6 - 3));
+
+  const scores = { transparency, decisiveness, empathy, risk_awareness, integrity };
+  console.log("DEBRIEF SCORES (heuristic):", scores);
 
   const pools = {
     style: [
@@ -73,13 +121,7 @@ function createFallbackReport(conversationHistory = []) {
 
   return {
     style: pick(pools.style),
-    scores: {
-      transparency: Math.max(40, Math.min(80, transparencyBase + (Math.random() * 20 - 10))),
-      decisiveness: Math.max(60, Math.min(95, decisivenessBase + (Math.random() * 20 - 10))),
-      empathy: 50 + Math.floor(Math.random() * 35),
-      risk_awareness: 60 + Math.floor(Math.random() * 35),
-      integrity: 50 + Math.floor(Math.random() * 40)
-    },
+    scores,
     key_moment: pick(pools.key_moment),
     blind_spot: pick(pools.blind_spot),
     strength: pick(pools.strength),
@@ -129,6 +171,10 @@ app.post('/api/chat', async (req, res) => {
 app.post('/api/debrief', async (req, res) => {
   const { conversationHistory } = req.body;
 
+  // 1. Calculate Heuristic Scores
+  const heuristicReport = createFallbackReport(conversationHistory);
+  const scores = heuristicReport.scores;
+
   const conversationText = conversationHistory
     .map(m => `${m.role === 'user' ? 'USER' : 'CHARACTER'}: ${m.content}`)
     .join('\n');
@@ -137,17 +183,10 @@ app.post('/api/debrief', async (req, res) => {
 TONE: Direct, analytical, slightly intense. No motivational fluff.
 Return ONLY valid JSON in this exact structure:
 {
-  "style": "Title — followed by a sharp 1-line interpretation (e.g. 'Tactical Realist: You prioritize immediate stability over long-term organizational trust.')",
-  "scores": {
-    "transparency": 0-100,
-    "decisiveness": 0-100,
-    "empathy": 0-100,
-    "risk_awareness": 0-100,
-    "integrity": 0-100
-  },
-  "key_moment": "The single most revealing decision pattern shown. Be specific about the trade-off made.",
-  "blind_spot": "What the user is NOT seeing. Highlight the systemic risk they are creating.",
-  "strength": "One specific behavioral asset demonstrated under pressure.",
+  "style": "Title — followed by a sharp 1-line interpretation",
+  "key_moment": "The single most revealing decision pattern shown.",
+  "blind_spot": "What the user is NOT seeing.",
+  "strength": "One specific behavioral asset demonstrated.",
   "growth_edge": "The 'Hard Truth' insight only.",
   "impact_warning": "The real-world consequence only if this had been a live situation."
 }
@@ -156,6 +195,7 @@ CONVERSATION:
 ${conversationText}`;
 
   try {
+    console.log("TRYING GEMINI API...");
     if (!GEMINI_API_KEY) throw new Error("No API Key");
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
@@ -173,13 +213,19 @@ ${conversationText}`;
     if (!text) throw new Error("Empty response");
 
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    console.log("SOURCE: API");
-    return res.json(JSON.parse(cleaned));
+    const aiAnalysis = JSON.parse(cleaned);
+    
+    console.log("SOURCE: API (Analysis) + Heuristic (Scores)");
+    return res.json({
+      ...aiAnalysis,
+      scores // Overwrite or include computed scores
+    });
 
   } catch (err) {
-    console.log("SOURCE: FALLBACK (GENERATED)");
-    const fallback = createFallbackReport(conversationHistory);
-    return res.json(fallback);
+    console.log("DEBRIEF API FAILED:", err.message);
+    console.log("FULL ERROR:", err);
+    console.log("USING DEBRIEF FALLBACK");
+    return res.json(heuristicReport);
   }
 });
 
