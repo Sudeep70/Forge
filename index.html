@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forge — Develop Real-World Judgment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ['Bebas Neue', 'sans-serif'],
+              body: ['DM Sans', 'sans-serif'],
+              mono: ['DM Mono', 'monospace'],
+            },
+            colors: {
+              forge: {
+                bg: '#0A0A0B',
+                surface: '#111113',
+                border: '#1E1E22',
+                accent: '#FF4B1F',
+                'accent-dim': '#C23A17',
+                ember: '#FF8C42',
+                text: '#E8E6E1',
+                muted: '#6B6B70',
+                dim: '#3A3A3F',
+              }
+            },
+            animation: {
+              'pulse-dot': 'pulseDot 1.4s ease-in-out infinite',
+              'fade-up': 'fadeUp 0.4s ease-out forwards',
+              'slide-in': 'slideIn 0.3s ease-out forwards',
+            },
+            keyframes: {
+              pulseDot: {
+                '0%, 80%, 100%': { opacity: '0.2', transform: 'scale(0.8)' },
+                '40%': { opacity: '1', transform: 'scale(1)' },
+              },
+              fadeUp: {
+                '0%': { opacity: '0', transform: 'translateY(12px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              slideIn: {
+                '0%': { opacity: '0', transform: 'translateX(-8px)' },
+                '100%': { opacity: '1', transform: 'translateX(0)' },
+              },
+            },
+          }
+        }
+      }
+    </script>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        background: #0A0A0B;
+        color: #E8E6E1;
+        font-family: 'DM Sans', sans-serif;
+        margin: 0;
+      }
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-track { background: #111113; }
+      ::-webkit-scrollbar-thumb { background: #3A3A3F; border-radius: 2px; }
+      .typing-dot:nth-child(1) { animation-delay: 0s; }
+      .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+      .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes pulseDot {
+        0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+        40% { opacity: 1; transform: scale(1); }
+      }
+      .typing-dot {
+        animation: pulseDot 1.4s ease-in-out infinite;
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #FF4B1F;
+        margin: 0 2px;
+      }
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .fade-up { animation: fadeUp 0.4s ease-out forwards; }
+      .bar-fill {
+        transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .noise-overlay {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        background-size: 200px;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
