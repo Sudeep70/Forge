@@ -89,10 +89,24 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const textareaRef = useRef(null);
   const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      onEnd();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, onEnd]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -157,13 +171,13 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
 
   const handleSend = useCallback(() => {
     const text = input.trim();
-    if (!text || isTyping) return;
+    if (!text || isTyping || timeLeft <= 0) return;
     setInput('');
     onSend(text);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-  }, [input, isTyping, onSend]);
+  }, [input, isTyping, onSend, timeLeft]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -276,8 +290,23 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
       <main className="flex-1 flex flex-col relative bg-[#0A0A0B] min-h-0">
         <div className="absolute inset-0 noise-overlay opacity-20 pointer-events-none" />
         
+        {/* Timer UI */}
+        <div className="absolute top-4 md:top-8 right-4 md:right-12 z-30">
+          <div 
+            className={`px-4 py-2 rounded-full border font-mono text-[10px] md:text-sm transition-all duration-300 flex items-center gap-2 ${
+              timeLeft < 15 ? 'bg-red-500/10 border-red-500 text-red-500 animate-pulse' : 'bg-[#111113] border-[#1E1E22] text-[#6B6B70]'
+            }`}
+          >
+            {timeLeft <= 10 && timeLeft > 0 && <span>⚠️</span>}
+            <span className="hidden sm:inline uppercase tracking-widest">
+              {timeLeft <= 10 && timeLeft > 0 ? "Final Seconds: " : "Time Remaining: "}
+            </span>
+            <span className="font-bold">{timeLeft}s</span>
+          </div>
+        </div>
+
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-12 pt-8 md:pt-12 pb-6 relative z-10 scroll-smooth">
+        <div className="flex-1 overflow-y-auto px-4 md:px-12 pt-16 md:pt-24 pb-6 relative z-10 scroll-smooth">
           <div className="max-w-4xl mx-auto">
             {messages.map((msg, i) => (
               <MessageBubble
@@ -318,7 +347,7 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
               {/* Mic Button */}
               <button
                 onClick={toggleListening}
-                disabled={isTyping}
+                disabled={isTyping || timeLeft <= 0}
                 className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex flex-col items-center justify-center shrink-0 transition-all duration-300 shadow-lg group/mic relative overflow-hidden`}
                 style={{
                   background: isListening ? '#FF4B1F' : '#1E1E22',
@@ -344,8 +373,8 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
                 value={input}
                 onChange={handleTextareaChange}
                 onKeyDown={handleKeyDown}
-                placeholder={isListening ? "Listening..." : "Type response..."}
-                disabled={isTyping || isListening}
+                placeholder={timeLeft <= 0 ? "Simulation Terminated" : isListening ? "Listening..." : "Type response..."}
+                disabled={isTyping || isListening || timeLeft <= 0}
                 rows={1}
                 className="flex-1 bg-transparent border-none outline-none resize-none text-base md:text-lg leading-relaxed py-2 px-1 md:px-2 placeholder:text-[#3A3A3F]"
                 style={{
@@ -358,14 +387,14 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
 
               <button
                 onClick={handleSend}
-                disabled={!input.trim() || isTyping || isListening}
+                disabled={!input.trim() || isTyping || isListening || timeLeft <= 0}
                 className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-lg"
                 style={{
-                  background: input.trim() && !isTyping && !isListening ? '#FF4B1F' : '#1E1E22',
-                  transform: input.trim() && !isTyping && !isListening ? 'scale(1)' : 'scale(0.95)',
+                  background: input.trim() && !isTyping && !isListening && timeLeft > 0 ? '#FF4B1F' : '#1E1E22',
+                  transform: input.trim() && !isTyping && !isListening && timeLeft > 0 ? 'scale(1)' : 'scale(0.95)',
                 }}
               >
-                <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !isTyping && !isListening ? '#fff' : '#3A3A3F'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !isTyping && !isListening && timeLeft > 0 ? '#fff' : '#3A3A3F'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13"></line>
                   <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
