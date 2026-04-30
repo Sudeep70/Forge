@@ -13,6 +13,9 @@ export function useForge() {
   const [messages, setMessages] = useState([]); // [{role, content, character, characterId}]
   const [isTyping, setIsTyping] = useState(false);
   const [isGeneratingDebrief, setIsGeneratingDebrief] = useState(false);
+  const [debrief, setDebrief] = useState(null);
+  const [error, setError] = useState(null);
+  const [debriefError, setDebriefError] = useState(null);
   const [user, setUser] = useState(null);
   const [isDemo, setIsDemo] = useState(localStorage.getItem("demo_user") === "true");
   const streamingRef = useRef(false);
