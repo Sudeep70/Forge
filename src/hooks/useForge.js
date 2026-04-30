@@ -13,37 +13,77 @@ export function useForge() {
   const [messages, setMessages] = useState([]); // [{role, content, character, characterId}]
   const [isTyping, setIsTyping] = useState(false);
   const [isGeneratingDebrief, setIsGeneratingDebrief] = useState(false);
-  const [debrief, setDebrief] = useState(null);
-  const [error, setError] = useState(null);
-  const [debriefError, setDebriefError] = useState(null);
   const [user, setUser] = useState(null);
+  const [isDemo, setIsDemo] = useState(localStorage.getItem("demo_user") === "true");
   const streamingRef = useRef(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUser(user);
+      } else if (isDemo) {
+        setUser({ email: 'demo@forge.ai', user_metadata: { avatar_url: null } });
+      }
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      if (session?.user) {
+        setUser(session.user);
+        setIsDemo(false);
+        localStorage.removeItem("demo_user");
+      }
     });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isDemo]);
 
   const login = async () => {
     const email = prompt("Enter your email:");
-    if (!email) return;
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email
-    });
+    // Validate email
+    if (!email || !email.includes("@")) {
+      alert("Enter a valid email address");
+      return;
+    }
 
-    if (error) {
-      console.log("Login error:", error.message);
-    } else {
-      alert("Check your email for login link");
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          shouldCreateUser: true
+        }
+      });
+
+      if (error) {
+        console.log("LOGIN ERROR:", error.message);
+
+        // Handle rate limit
+        if (error.message.includes("rate limit")) {
+          alert("Too many attempts. Please wait 1 minute.");
+        } else {
+          alert("Login failed. Switching to demo mode.");
+        }
+
+        // Fallback demo login
+        localStorage.setItem("demo_user", "true");
+        setIsDemo(true);
+        return;
+      }
+
+      alert("Check your email (or spam folder)");
+
+    } catch (err) {
+      console.log("CRASH:", err);
+
+      // Fallback demo login
+      localStorage.setItem("demo_user", "true");
+      setIsDemo(true);
     }
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem("demo_user");
+    setIsDemo(false);
     alert("Logged out");
     setScreen('home');
   };
