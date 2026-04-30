@@ -21,15 +21,32 @@ function ScenarioCard({ scenario, onStart }) {
         style={{ background: '#111113', borderColor: '#1E1E22' }}
       >
         <div className="flex items-start justify-between mb-6">
-          <div
-            className="text-xs font-mono font-medium px-3 py-1 rounded-full"
-            style={{
-              color: intensityColor[scenario.intensity] || '#FF4B1F',
-              background: `${intensityColor[scenario.intensity] || '#FF4B1F'}18`,
-              border: `1px solid ${intensityColor[scenario.intensity] || '#FF4B1F'}33`,
-            }}
-          >
-            {scenario.intensity} Pressure
+          <div className="flex gap-2">
+            <div
+              className="text-xs font-mono font-medium px-3 py-1 rounded-full"
+              style={{
+                color: intensityColor[scenario.intensity] || '#FF4B1F',
+                background: `${intensityColor[scenario.intensity] || '#FF4B1F'}18`,
+                border: `1px solid ${intensityColor[scenario.intensity] || '#FF4B1F'}33`,
+              }}
+            >
+              {scenario.intensity} Pressure
+            </div>
+            {scenario.type === 'video' && (
+              <div
+                className="text-xs font-mono font-bold px-3 py-1 rounded-full flex items-center gap-1.5"
+                style={{
+                  color: '#fff',
+                  background: '#FF4B1F',
+                  boxShadow: '0 0 10px rgba(255, 75, 31, 0.4)'
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                VIDEO
+              </div>
+            )}
           </div>
           <div className="text-sm font-mono text-forge-muted" style={{ color: '#6B6B70' }}>
             {scenario.durationMin} min

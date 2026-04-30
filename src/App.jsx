@@ -2,8 +2,9 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useForge } from './hooks/useForge.js';
 import HomeScreen from './screens/HomeScreen.jsx';
 import ScenarioScreen from './screens/ScenarioScreen.jsx';
-import DebriefScreen from './screens/DebriefScreen.jsx';
 import DashboardScreen from './screens/DashboardScreen.jsx';
+import VideoScenarioScreen from './screens/VideoScenarioScreen.jsx';
+import DebriefScreen from './screens/DebriefScreen.jsx';
 
 export default function App() {
   const navigate = useNavigate();
@@ -61,7 +62,19 @@ export default function App() {
               />
             )}
 
-            {screen === 'scenario' && (
+            {screen === 'scenario' && activeScenario?.type === 'video' && (
+              <VideoScenarioScreen
+                scenario={activeScenario}
+                messages={messages}
+                isTyping={isTyping}
+                error={error}
+                onSend={sendUserMessage}
+                onEnd={endScenario}
+                onRetry={retryLastMessage}
+              />
+            )}
+
+            {screen === 'scenario' && activeScenario?.type !== 'video' && (
               <ScenarioScreen
                 scenario={activeScenario}
                 messages={messages}

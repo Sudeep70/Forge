@@ -156,14 +156,19 @@ export function useForge() {
     setActiveScenario(scenario);
     setError(null);
 
-    // Load the opening message from scenario data
-    const opening = scenario.openingMessage;
-    setMessages([{
-      role: 'assistant',
-      content: opening.content,
-      character: opening.character,
-      characterId: opening.characterId,
-    }]);
+    // Video scenarios don't have an opening message, they start with the video
+    if (scenario.type === 'video') {
+      setMessages([]);
+    } else {
+      // Load the opening message from scenario data
+      const opening = scenario.openingMessage;
+      setMessages([{
+        role: 'assistant',
+        content: opening.content,
+        character: opening.character,
+        characterId: opening.characterId,
+      }]);
+    }
 
     setScreen('scenario');
   }, []);
@@ -206,7 +211,7 @@ export function useForge() {
     setScreen('scenario');
   }, []);
 
-  const sendUserMessage = useCallback(async (userText) => {
+  const sendUserMessage = useCallback(async (userText, systemPromptOverride = null) => {
     if (!userText.trim() || isTyping || streamingRef.current) return;
     if (!activeScenario) return;
 
@@ -242,11 +247,13 @@ export function useForge() {
       setTimeout(() => reject(new Error('AI response timed out. Please try again.')), 15000)
     );
 
+    const activeSystemPrompt = systemPromptOverride || activeScenario.systemPrompt;
+
     try {
       await Promise.race([
         sendMessage(
           apiMessages,
-          `STRICT CHARACTER RULE: You may ONLY play the characters listed in THIS scenario. Do not use characters from any other scenario. The only valid characters right now are: [${activeScenario.characters.map(c => c.name).join(', ')}].\n\n${activeScenario.systemPrompt}`,
+          `STRICT CHARACTER RULE: You may ONLY play the characters listed in THIS scenario. Do not use characters from any other scenario. The only valid characters right now are: [${activeScenario.characters.map(c => c.name).join(', ')}].\n\n${activeSystemPrompt}`,
           (delta) => {
             streamedText += delta;
             // Parse character on first chunk that contains the bracket

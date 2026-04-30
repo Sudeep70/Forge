@@ -81,6 +81,42 @@ FORMAT: Use [Jason] or [Marcus]. Jason is confident and persuasive. Marcus asks 
       content: "[Jason] So, as you can see from the deck, I spent the weekend refactoring the entire deployment pipeline. It’s finally stable. Marcus, I think this really addresses the bottleneck we talked about last month. What do you think, should we roll it out?",
     },
   },
+  {
+    id: "boardroom-crisis",
+    type: "video",
+    title: "The Boardroom Crisis",
+    subtitle: "A heated board meeting. Three decision points. No right answer.",
+    description: "A heated board meeting. Three decision points. No right answer.",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    intensity: "High Pressure",
+    durationMin: "10-15",
+    tags: ["Leadership", "Negotiation", "Ethics"],
+    characters: [
+      { id: 'alex', name: 'Alex', role: 'CTO', initial: 'A', color: '#3B82F6' },
+      { id: 'priya', name: 'Priya', role: 'CEO', initial: 'P', color: '#8B5CF6' },
+      { id: 'richard', name: 'Richard', role: 'Board Member', initial: 'R', color: '#10B981' }
+    ],
+    decisionPoints: [
+      {
+        timestamp: 10,
+        prompt: "The CFO just accused your team of hiding the numbers. Everyone is looking at you. What do you say?",
+        characters: ["Alex", "Priya"],
+        systemPrompt: "The user just watched a CFO accuse their team in a board meeting. They have responded. Play Alex (defensive CTO) and Priya (CEO who is embarrassed). React to exactly what the user said."
+      },
+      {
+        timestamp: 25,
+        prompt: "The board member is asking you directly — did you know about this before today?",
+        characters: ["Richard"],
+        systemPrompt: "The user is being directly questioned by board member Richard about prior knowledge of a financial issue. React as Richard — skeptical, direct, experienced."
+      },
+      {
+        timestamp: 40,
+        prompt: "The CEO pulls you aside after the meeting. She looks furious.",
+        characters: ["Priya"],
+        systemPrompt: "Priya (CEO) has pulled the user aside after a difficult board meeting. She is furious but controlled. React based on how the user handled the earlier decision points."
+      }
+    ]
+  }
 ];
 
 export const getScenario = (id) => scenarios.find(s => s.id === id);
