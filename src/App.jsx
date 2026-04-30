@@ -17,6 +17,7 @@ export default function App() {
     error,
     debriefError,
     user,
+    authError,
     startScenario,
     startCustomScenario,
     login,
@@ -42,6 +43,7 @@ export default function App() {
                 user={user}
                 login={login}
                 logout={logout}
+                authError={authError}
                 setScreen={setScreen}
               />
             )}

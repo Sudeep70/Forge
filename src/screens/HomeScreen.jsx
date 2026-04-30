@@ -86,7 +86,7 @@ function ScenarioCard({ scenario, onStart }) {
   );
 }
 
-export default function HomeScreen({ onStart, onStartCustom, user, login, logout, setScreen }) {
+export default function HomeScreen({ onStart, onStartCustom, user, login, logout, authError, setScreen }) {
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
 
   return (
@@ -112,38 +112,45 @@ export default function HomeScreen({ onStart, onStartCustom, user, login, logout
             <span className="font-display text-xl md:text-3xl tracking-[0.2em]" style={{ color: '#E8E6E1' }}>FORGE</span>
           </div>
 
-          <div className="flex items-center gap-4 md:gap-8">
-            {user ? (
-              <div className="flex items-center gap-4 md:gap-6">
-                <Link 
-                  to="/history"
-                  className="text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] text-[#6B6B70] hover:text-[#FF4B1F] transition-colors"
-                >
-                  History
-                </Link>
-                <div className="flex items-center gap-3 pl-4 md:pl-6 border-l border-[#1E1E22]">
-                  <div className="hidden sm:block text-right">
-                    <p className="text-[10px] font-mono text-[#E8E6E1] leading-none mb-1 capitalize">{user.email.split('@')[0]}</p>
-                    <button onClick={logout} className="text-[9px] font-mono text-[#3A3A3F] hover:text-[#FF4B1F] uppercase tracking-widest transition-colors">Logout</button>
-                  </div>
-                  <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#111113] border border-[#1E1E22] flex items-center justify-center overflow-hidden">
-                    {user.user_metadata?.avatar_url ? (
-                      <img src={user.user_metadata.avatar_url} alt="profile" className="w-full h-full object-cover opacity-80" />
-                    ) : (
-                      <span className="text-xs font-mono text-[#FF4B1F]">{user.email[0].toUpperCase()}</span>
-                    )}
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-4 md:gap-8">
+              {user ? (
+                <div className="flex items-center gap-4 md:gap-6">
+                  <Link 
+                    to="/history"
+                    className="text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] text-[#6B6B70] hover:text-[#FF4B1F] transition-colors"
+                  >
+                    History
+                  </Link>
+                  <div className="flex items-center gap-3 pl-4 md:pl-6 border-l border-[#1E1E22]">
+                    <div className="hidden sm:block text-right">
+                      <p className="text-[10px] font-mono text-[#E8E6E1] leading-none mb-1 capitalize">{user.email.split('@')[0]}</p>
+                      <button onClick={logout} className="text-[9px] font-mono text-[#3A3A3F] hover:text-[#FF4B1F] uppercase tracking-widest transition-colors">Logout</button>
+                    </div>
+                    <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#111113] border border-[#1E1E22] flex items-center justify-center overflow-hidden">
+                      {user.user_metadata?.avatar_url ? (
+                        <img src={user.user_metadata.avatar_url} alt="profile" className="w-full h-full object-cover opacity-80" />
+                      ) : (
+                        <span className="text-xs font-mono text-[#FF4B1F]">{user.email[0].toUpperCase()}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <button 
-                onClick={login}
-                className="text-[10px] md:text-xs font-mono uppercase tracking-[0.3em] px-5 py-2 rounded-full border border-[#1E1E22] hover:border-[#FF4B1F33] hover:bg-[#FF4B1F10] transition-all flex items-center gap-2 group"
-                style={{ color: '#E8E6E1' }}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#3A3A3F] group-hover:bg-[#FF4B1F] animate-pulse" />
-                Auth_Login
-              </button>
+              ) : (
+                <button 
+                  onClick={login}
+                  className="text-[10px] md:text-xs font-mono uppercase tracking-[0.3em] px-5 py-2 rounded-full border border-[#1E1E22] hover:border-[#FF4B1F33] hover:bg-[#FF4B1F10] transition-all flex items-center gap-2 group"
+                  style={{ color: '#E8E6E1' }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3A3A3F] group-hover:bg-[#FF4B1F] animate-pulse" />
+                  Auth_Login
+                </button>
+              )}
+            </div>
+            {authError && (
+              <span className={`text-[9px] font-mono uppercase tracking-widest ${authError.includes('SUCCESS') ? 'text-green-500' : 'text-orange-500'}`}>
+                {authError}
+              </span>
             )}
           </div>
         </nav>

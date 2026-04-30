@@ -18,6 +18,7 @@ export function useForge() {
   const [debriefError, setDebriefError] = useState(null);
   const [user, setUser] = useState(null);
   const [isDemo, setIsDemo] = useState(localStorage.getItem("demo_user") === "true");
+  const [authError, setAuthError] = useState(null);
   const streamingRef = useRef(false);
 
   useEffect(() => {
@@ -40,11 +41,12 @@ export function useForge() {
   }, [isDemo]);
 
   const login = async () => {
+    setAuthError(null);
     const email = prompt("Enter your email:");
 
     // Validate email
     if (!email || !email.includes("@")) {
-      alert("Enter a valid email address");
+      setAuthError("Enter a valid email address");
       return;
     }
 
@@ -61,9 +63,9 @@ export function useForge() {
 
         // Handle rate limit
         if (error.message.includes("rate limit")) {
-          alert("Too many attempts. Please wait 1 minute.");
+          setAuthError("Too many attempts. Please wait 1 minute or use Demo Mode.");
         } else {
-          alert("Login failed. Switching to demo mode.");
+          setAuthError("Login failed. Switching to demo mode.");
         }
 
         // Fallback demo login
@@ -72,22 +74,32 @@ export function useForge() {
         return;
       }
 
-      alert("Check your email (or spam folder)");
+      setAuthError("SUCCESS: Check your email (or spam folder)");
 
     } catch (err) {
       console.log("CRASH:", err);
-
-      // Fallback demo login
+      setAuthError("System crash. Initializing demo mode.");
       localStorage.setItem("demo_user", "true");
       setIsDemo(true);
     }
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem("demo_user");
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.log("SIGNOUT_ERROR:", err);
+    }
+    
+    // Clear all persistent storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Reset in-memory state
+    setUser(null);
     setIsDemo(false);
-    alert("Logged out");
+    
+    // Redirect to home
     setScreen('home');
   };
 
@@ -324,6 +336,7 @@ export function useForge() {
     error,
     debriefError,
     user,
+    authError,
     // Actions
     login,
     logout,
