@@ -34,6 +34,7 @@ export function useForge() {
       if (session?.user) {
         setUser(session.user);
         setIsDemo(false);
+        setAuthError(null); // Clear errors on login
         localStorage.removeItem("demo_user");
       }
     });
@@ -98,6 +99,7 @@ export function useForge() {
     // Reset in-memory state
     setUser(null);
     setIsDemo(false);
+    setAuthError(null); // Clear errors on logout
     
     // Redirect to home
     setScreen('home');
