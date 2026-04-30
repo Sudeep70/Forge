@@ -92,37 +92,37 @@ export default function History({ onBack }) {
 
               {/* Analysis Sections */}
               {(() => {
-                const report = selected?.report || {};
+                const debrief = selected?.report || {};
                 return (
                   <div className="grid gap-4">
                     <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-orange-500/20 transition-colors">
                       <h3 className="text-orange-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Leadership Style</h3>
-                      <p className="text-sm leading-relaxed text-[#E8E6E1]">{report.style}</p>
+                      <p className="text-sm leading-relaxed text-[#E8E6E1]">{debrief.style || "No data"}</p>
                     </div>
 
                     <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-green-500/20 transition-colors">
                       <h3 className="text-green-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Core Strength</h3>
-                      <p className="text-sm leading-relaxed text-[#E8E6E1]">{report.strength}</p>
+                      <p className="text-sm leading-relaxed text-[#E8E6E1]">{debrief.strength || "No data"}</p>
                     </div>
 
                     <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-red-500/20 transition-colors">
                       <h3 className="text-red-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Blind Spot</h3>
-                      <p className="text-sm leading-relaxed text-[#E8E6E1]">{report.blind_spot}</p>
+                      <p className="text-sm leading-relaxed text-[#E8E6E1]">{debrief.blind_spot || "No data"}</p>
                     </div>
 
                     <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-blue-500/20 transition-colors">
                       <h3 className="text-blue-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Key Moment</h3>
-                      <p className="text-sm leading-relaxed text-[#E8E6E1]">{report.key_moment}</p>
+                      <p className="text-sm leading-relaxed text-[#E8E6E1]">{debrief.key_moment || "No data"}</p>
                     </div>
 
                     <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-purple-500/20 transition-colors">
                       <h3 className="text-purple-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Growth Edge</h3>
-                      <p className="text-sm leading-relaxed text-[#E8E6E1]">{report.growth_edge}</p>
+                      <p className="text-sm leading-relaxed text-[#E8E6E1]">{debrief.growth_edge || "No data"}</p>
                     </div>
 
                     <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-yellow-500/20 transition-colors">
                       <h3 className="text-yellow-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Impact Warning</h3>
-                      <p className="text-sm leading-relaxed text-[#E8E6E1] font-medium">{report.impact_warning}</p>
+                      <p className="text-sm leading-relaxed text-[#E8E6E1] font-medium">{debrief.impact_warning || "No data"}</p>
                     </div>
                   </div>
                 );
