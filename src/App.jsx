@@ -22,7 +22,9 @@ export default function App() {
     authError,
     startScenario,
     startCustomScenario,
-    login,
+    signIn,
+    signUp,
+    loginAsDemo,
     logout,
     sendUserMessage,
     endScenario,
@@ -43,7 +45,9 @@ export default function App() {
                 onStartCustom={startCustomScenario}
                 user={user}
                 sessions={sessions}
-                login={login}
+                signIn={signIn}
+                signUp={signUp}
+                loginAsDemo={loginAsDemo}
                 logout={logout}
                 authError={authError}
                 setScreen={setScreen}

@@ -66,62 +66,53 @@ export function useForge() {
     return () => subscription.unsubscribe();
   }, [isDemo, fetchSessions]);
 
-  const login = async () => {
+  const signIn = async (email, password) => {
     setAuthError(null);
-
-    // 1. Check client-side cooldown
-    const cooldown = localStorage.getItem('auth_cooldown');
-    if (cooldown && Date.now() < parseInt(cooldown)) {
-      const mins = Math.ceil((parseInt(cooldown) - Date.now()) / 60000);
-      setAuthError(`Email login temporarily unavailable. Try again in ${mins}m or use Demo Mode.`);
-      return;
-    }
-
-    const email = prompt("Enter your email:");
-
-    // Validate email
-    if (!email || !email.includes("@")) {
-      setAuthError("Enter a valid email address");
-      return;
-    }
-
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
-          shouldCreateUser: true
-        }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
       if (error) {
-        console.log("LOGIN ERROR:", error);
-
-        // Handle Supabase 429 Rate Limit specifically
-        if (error.status === 429 || error.message.toLowerCase().includes("rate limit")) {
-          // Set 5-minute cooldown
-          localStorage.setItem('auth_cooldown', (Date.now() + 5 * 60 * 1000).toString());
-          setAuthError("Email login is temporarily unavailable. Please try again later or use Demo Mode");
+        if (error.message.includes("Invalid login credentials")) {
+          setAuthError("Invalid email or password");
         } else {
-          setAuthError("Login failed. Switching to demo mode.");
+          setAuthError(error.message);
         }
-
-        // Fallback demo login
-        localStorage.setItem("demo_user", "true");
-        setIsDemo(true);
-        setTimeout(() => setAuthError(null), 3000);
-        return;
+        return false;
       }
-
-      setAuthError("SUCCESS: Check your email (or spam folder)");
-      setTimeout(() => setAuthError(null), 5000);
-
+      return true;
     } catch (err) {
-      console.log("CRASH:", err);
-      setAuthError("System crash. Initializing demo mode.");
-      localStorage.setItem("demo_user", "true");
-      setIsDemo(true);
-      setTimeout(() => setAuthError(null), 3000);
+      setAuthError("Connection failed. Try again.");
+      return false;
     }
+  };
+
+  const signUp = async (email, password) => {
+    setAuthError(null);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        setAuthError(error.message);
+        return false;
+      }
+      setAuthError("Account created! Logging in...");
+      return true;
+    } catch (err) {
+      setAuthError("Sign up failed. Try again.");
+      return false;
+    }
+  };
+
+  const loginAsDemo = () => {
+    localStorage.setItem("demo_user", "true");
+    setIsDemo(true);
+    setUser({ email: 'demo@forge.ai', user_metadata: { avatar_url: null } });
   };
 
   const logout = async () => {
@@ -387,7 +378,9 @@ export function useForge() {
     authError,
     isLoadingSessions,
     // Actions
-    login,
+    signIn,
+    signUp,
+    loginAsDemo,
     logout,
     startScenario,
     startCustomScenario,

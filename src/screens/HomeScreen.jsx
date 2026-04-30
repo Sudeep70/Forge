@@ -86,8 +86,110 @@ function ScenarioCard({ scenario, onStart }) {
   );
 }
 
-export default function HomeScreen({ onStart, onStartCustom, user, sessions, login, logout, authError, setScreen }) {
+function LoginModal({ isOpen, onClose, signIn, signUp, loginAsDemo, error }) {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    const success = isSignUp 
+      ? await signUp(email, password)
+      : await signIn(email, password);
+    
+    setIsLoading(false);
+    if (success && !isSignUp) onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
+      
+      <div className="relative w-full max-w-md bg-[#111113] border border-[#1E1E22] rounded-[32px] p-8 md:p-10 shadow-2xl overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FF4B1F] to-transparent opacity-50" />
+        
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="font-display text-3xl text-[#E8E6E1] tracking-tight">
+            {isSignUp ? 'CREATE_ACCOUNT' : 'SECURE_LOGIN'}
+          </h2>
+          <button onClick={onClose} className="text-[#3A3A3F] hover:text-[#FF4B1F] transition-colors">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#3A3A3F]">Neural_ID (Email)</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-[#0A0A0B] border border-[#1E1E22] rounded-xl px-5 py-4 text-[#E8E6E1] focus:border-[#FF4B1F33] focus:ring-1 focus:ring-[#FF4B1F33] transition-all outline-none"
+              placeholder="name@example.com"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#3A3A3F]">Passkey</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-[#0A0A0B] border border-[#1E1E22] rounded-xl px-5 py-4 text-[#E8E6E1] focus:border-[#FF4B1F33] focus:ring-1 focus:ring-[#FF4B1F33] transition-all outline-none"
+              placeholder="••••••••"
+            />
+          </div>
+
+          {error && (
+            <p className="text-[10px] font-mono uppercase text-orange-500 tracking-wider">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-4 bg-[#FF4B1F] text-white rounded-xl font-mono text-sm uppercase tracking-[0.2em] hover:brightness-110 transition-all shadow-xl shadow-orange-900/20 disabled:opacity-50"
+          >
+            {isLoading ? 'SYNCING...' : isSignUp ? 'INITIALIZE_ACCOUNT' : 'DECRYPT_ACCESS'}
+          </button>
+        </form>
+
+        <div className="mt-8 pt-8 border-t border-[#1E1E22] flex flex-col gap-4">
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-[10px] font-mono text-[#6B6B70] hover:text-[#E8E6E1] transition-colors uppercase tracking-widest text-center"
+          >
+            {isSignUp ? 'Already have access? Login' : 'Need a neural link? Sign up'}
+          </button>
+          
+          <button
+            onClick={() => {
+              loginAsDemo();
+              onClose();
+            }}
+            className="text-[10px] font-mono text-[#3A3A3F] hover:text-[#FF4B1F] transition-colors uppercase tracking-widest text-center"
+          >
+            Bypass with Demo_Mode
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function HomeScreen({ onStart, onStartCustom, user, sessions, signIn, signUp, loginAsDemo, logout, authError, setScreen }) {
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const stats = useMemo(() => calculateStats(sessions), [sessions]);
 
@@ -147,7 +249,7 @@ export default function HomeScreen({ onStart, onStartCustom, user, sessions, log
                 </div>
               ) : (
                 <button 
-                  onClick={login}
+                  onClick={() => setIsLoginModalOpen(true)}
                   className="text-[10px] md:text-xs font-mono uppercase tracking-[0.3em] px-5 py-2 rounded-full border border-[#1E1E22] hover:border-[#FF4B1F33] hover:bg-[#FF4B1F10] transition-all flex items-center gap-2 group"
                   style={{ color: '#E8E6E1' }}
                 >
@@ -306,6 +408,15 @@ export default function HomeScreen({ onStart, onStartCustom, user, sessions, log
           onCancel={() => setIsCustomModalOpen(false)}
         />
       )}
+
+      <LoginModal 
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        signIn={signIn}
+        signUp={signUp}
+        loginAsDemo={loginAsDemo}
+        error={authError}
+      />
     </div>
   );
 }
