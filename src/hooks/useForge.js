@@ -45,6 +45,15 @@ export function useForge() {
 
   const login = async () => {
     setAuthError(null);
+
+    // 1. Check client-side cooldown
+    const cooldown = localStorage.getItem('auth_cooldown');
+    if (cooldown && Date.now() < parseInt(cooldown)) {
+      const mins = Math.ceil((parseInt(cooldown) - Date.now()) / 60000);
+      setAuthError(`Email login temporarily unavailable. Try again in ${mins}m or use Demo Mode.`);
+      return;
+    }
+
     const email = prompt("Enter your email:");
 
     // Validate email
@@ -66,7 +75,9 @@ export function useForge() {
 
         // Handle Supabase 429 Rate Limit specifically
         if (error.status === 429 || error.message.toLowerCase().includes("rate limit")) {
-          setAuthError("Rate limit exceeded. Please wait a few minutes before trying again.");
+          // Set 5-minute cooldown
+          localStorage.setItem('auth_cooldown', (Date.now() + 5 * 60 * 1000).toString());
+          setAuthError("Email login is temporarily unavailable. Please try again later or use Demo Mode");
         } else {
           setAuthError("Login failed. Switching to demo mode.");
         }

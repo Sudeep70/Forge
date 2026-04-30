@@ -129,27 +129,37 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.lang = 'en-US';
 
-      recognition.onstart = () => setIsListening(true);
+      // Keep track of the input before voice started to append correctly
+      let baseText = '';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        baseText = inputRef.current?.value || '';
+      };
+
       recognition.onend = () => setIsListening(false);
+      
       recognition.onerror = (event) => {
         setIsListening(false);
+        console.error('Speech Recognition Error:', event.error);
         if (event.error === 'not-allowed') {
           alert('Microphone permission required');
         }
       };
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        if (transcript.trim()) {
-          setInput(prev => {
-            const current = prev.trim();
-            return current ? `${current} ${transcript.trim()}` : transcript.trim();
-          });
+        let sessionTranscript = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          sessionTranscript += event.results[i][0].transcript;
         }
+        
+        // Update the input with base text + what's been said in this session
+        const newText = baseText ? `${baseText.trim()} ${sessionTranscript.trim()}` : sessionTranscript.trim();
+        setInput(newText);
       };
 
       recognitionRef.current = recognition;
@@ -172,12 +182,18 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
   const handleSend = useCallback(() => {
     const text = input.trim();
     if (!text || isTyping || timeLeft <= 0) return;
+
+    // Stop listening if active
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+
     setInput('');
     onSend(text);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-  }, [input, isTyping, onSend, timeLeft]);
+  }, [input, isTyping, onSend, timeLeft, isListening]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -187,6 +203,9 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
   };
 
   const handleTextareaChange = (e) => {
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
     setInput(e.target.value);
   };
 
@@ -374,7 +393,7 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
                 onChange={handleTextareaChange}
                 onKeyDown={handleKeyDown}
                 placeholder={timeLeft <= 0 ? "Simulation Terminated" : isListening ? "Listening..." : "Type response..."}
-                disabled={isTyping || isListening || timeLeft <= 0}
+                disabled={isTyping || timeLeft <= 0}
                 rows={1}
                 className="flex-1 bg-transparent border-none outline-none resize-none text-base md:text-lg leading-relaxed py-2 px-1 md:px-2 placeholder:text-[#3A3A3F]"
                 style={{
@@ -387,14 +406,14 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
 
               <button
                 onClick={handleSend}
-                disabled={!input.trim() || isTyping || isListening || timeLeft <= 0}
+                disabled={!input.trim() || isTyping || timeLeft <= 0}
                 className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-lg"
                 style={{
-                  background: input.trim() && !isTyping && !isListening && timeLeft > 0 ? '#FF4B1F' : '#1E1E22',
-                  transform: input.trim() && !isTyping && !isListening && timeLeft > 0 ? 'scale(1)' : 'scale(0.95)',
+                  background: input.trim() && !isTyping && timeLeft > 0 ? '#FF4B1F' : '#1E1E22',
+                  transform: input.trim() && !isTyping && timeLeft > 0 ? 'scale(1)' : 'scale(0.95)',
                 }}
               >
-                <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !isTyping && !isListening && timeLeft > 0 ? '#fff' : '#3A3A3F'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !isTyping && timeLeft > 0 ? '#fff' : '#3A3A3F'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13"></line>
                   <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
