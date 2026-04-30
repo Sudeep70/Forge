@@ -87,7 +87,9 @@ function ScenarioCard({ scenario, onStart }) {
 
 export default function HomeScreen({ onStart, onStartCustom }) {
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
-      <div className="fixed inset-0 noise-overlay opacity-60 pointer-events-none" />
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ background: '#0A0A0B' }}>
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.03]"
         style={{
