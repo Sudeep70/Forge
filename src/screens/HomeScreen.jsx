@@ -126,9 +126,9 @@ export default function HomeScreen({ onStart }) {
               className="font-display leading-[0.9] mb-8 md:mb-10 text-5xl md:text-7xl lg:text-[110px]"
               style={{ color: '#E8E6E1', letterSpacing: '-0.02em' }}
             >
-              DEVELOP<br />
+              TRAIN YOUR<br />
               JUDGMENT<br />
-              <span style={{ color: '#FF4B1F' }}>THAT SCHOOLS<br />CAN'T TEACH.</span>
+              <span style={{ color: '#FF4B1F' }}>UNDER PRESSURE.</span>
             </h1>
 
             <p className="text-base md:text-xl leading-relaxed max-w-lg" style={{ color: '#6B6B70' }}>
