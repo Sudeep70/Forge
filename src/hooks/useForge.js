@@ -28,11 +28,23 @@ export function useForge() {
   }, []);
 
   const login = async () => {
-    await supabase.auth.signInWithOAuth({ provider: 'google' });
+    const email = prompt("Enter your email:");
+    if (!email) return;
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email
+    });
+
+    if (error) {
+      console.log("Login error:", error.message);
+    } else {
+      alert("Check your email for login link");
+    }
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
+    alert("Logged out");
     setScreen('home');
   };
 
