@@ -108,8 +108,8 @@ export default function DebriefScreen({ debrief, isLoading, error, onRetry, onRe
   );
   if (!debrief) return <LoadingDebrief />;
 
-  const report = debrief || {};
-  const styleParts = report.style?.split(' — ') || [];
+  const debriefData = debrief || {};
+  const styleParts = debriefData?.style?.split(' — ') || [];
   const styleName = styleParts[0] || 'ANALYSIS_COMPLETE';
   const styleSubtitle = styleParts[1] || 'Decision patterns have been successfully deconstructed.';
 
@@ -139,17 +139,17 @@ export default function DebriefScreen({ debrief, isLoading, error, onRetry, onRe
             <section className="bg-[#111113]/50 rounded-3xl p-6 md:p-8 border border-[#1E1E22]">
               <h3 className="text-[10px] font-mono uppercase tracking-[0.4em] mb-8 md:mb-10 text-[#3A3A3F]">Judgment_Neural_Map</h3>
               <div className="space-y-2">
-                {Object.entries(report.scores || {}).map(([key, value], i) => (
+                {Object.entries(debriefData?.scores || {}).map(([key, value], i) => (
                   <ScoreBar key={key} label={scoreLabels[key] ?? key} value={value} color={scoreColors[key] ?? '#FF4B1F'} delay={200 + i * 100} />
                 ))}
               </div>
             </section>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 h-full">
-              <InsightCard label="Critical Moment" icon="⚡" content={report.key_moment} delay={600} />
-              <InsightCard label="Primary Strength" icon="✦" content={report.strength} delay={700} />
-              <InsightCard label="Blind Spot" icon="◎" content={report.blind_spot} delay={800} />
-              <InsightCard label="Growth Horizon" icon="→" content={report.growth_edge} delay={900} />
+              <InsightCard label="Critical Moment" icon="⚡" content={debriefData?.key_moment} delay={600} />
+              <InsightCard label="Primary Strength" icon="✦" content={debriefData?.strength} delay={700} />
+              <InsightCard label="Blind Spot" icon="◎" content={debriefData?.blind_spot} delay={800} />
+              <InsightCard label="Growth Horizon" icon="→" content={debriefData?.growth_edge} delay={900} />
               <button onClick={onReset} className="md:col-span-2 mt-4 py-5 md:py-6 rounded-2xl bg-[#FF4B1F] text-white font-mono text-[10px] md:text-xs uppercase tracking-[0.4em] hover:brightness-110 transition-all shadow-xl shadow-orange-900/20">Restart Neural Protocol</button>
             </div>
           </div>
