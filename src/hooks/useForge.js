@@ -62,11 +62,11 @@ export function useForge() {
       });
 
       if (error) {
-        console.log("LOGIN ERROR:", error.message);
+        console.log("LOGIN ERROR:", error);
 
-        // Handle rate limit
-        if (error.message.includes("rate limit")) {
-          setAuthError("Too many attempts. Please wait 1 minute or use Demo Mode.");
+        // Handle Supabase 429 Rate Limit specifically
+        if (error.status === 429 || error.message.toLowerCase().includes("rate limit")) {
+          setAuthError("Rate limit exceeded. Please wait a few minutes before trying again.");
         } else {
           setAuthError("Login failed. Switching to demo mode.");
         }
@@ -74,16 +74,19 @@ export function useForge() {
         // Fallback demo login
         localStorage.setItem("demo_user", "true");
         setIsDemo(true);
+        setTimeout(() => setAuthError(null), 3000);
         return;
       }
 
       setAuthError("SUCCESS: Check your email (or spam folder)");
+      setTimeout(() => setAuthError(null), 5000);
 
     } catch (err) {
       console.log("CRASH:", err);
       setAuthError("System crash. Initializing demo mode.");
       localStorage.setItem("demo_user", "true");
       setIsDemo(true);
+      setTimeout(() => setAuthError(null), 3000);
     }
   };
 
