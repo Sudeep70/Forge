@@ -25,8 +25,10 @@ export function useForge() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUser(user);
+        setAuthError(null);
       } else if (isDemo) {
         setUser({ email: 'demo@forge.ai', user_metadata: { avatar_url: null } });
+        setAuthError(null);
       }
     });
 
