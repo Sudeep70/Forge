@@ -177,22 +177,22 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
   };
 
   return (
-    <div className="flex h-screen bg-[#0A0A0B] overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-screen bg-[#0A0A0B] overflow-hidden">
       {/* LEFT PANEL: CONTEXT & CAST */}
-      <aside className="w-[450px] border-right border-[#1E1E22] bg-[#0A0A0B] flex flex-col shrink-0 relative z-20 shadow-2xl">
-        <div className="p-10 flex flex-col h-full">
+      <aside className="w-full lg:w-[450px] border-b lg:border-b-0 lg:border-r border-[#1E1E22] bg-[#0A0A0B] flex flex-col shrink-0 relative z-20 shadow-2xl overflow-y-auto lg:overflow-visible">
+        <div className="p-6 md:p-10 flex flex-col h-full">
           {/* Header */}
-          <div className="mb-12">
+          <div className="mb-8 lg:mb-12">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-8 rounded bg-[#FF4B1F] flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
                   <path d="M7 1C7 1 9 4 9 6.5C9 7.88 7.88 9 6.5 9C5.12 9 4 7.88 4 6.5C4 5.5 4.5 4.5 5 4C4 5 3 7 4.5 9.5C5.3 11 6.5 12 6.5 12C6.5 12 10 10 10 6.5C10 3.5 7 1 7 1Z" fill="white" />
                 </svg>
               </div>
-              <span className="font-display text-2xl tracking-[0.1em]" style={{ color: '#E8E6E1' }}>FORGE</span>
+              <span className="font-display text-xl md:text-2xl tracking-[0.1em]" style={{ color: '#E8E6E1' }}>FORGE</span>
             </div>
             
-            <h1 className="font-display text-4xl mb-4 leading-tight" style={{ color: '#E8E6E1' }}>
+            <h1 className="font-display text-2xl md:text-4xl mb-4 leading-tight" style={{ color: '#E8E6E1' }}>
               {scenario?.title}
             </h1>
             
@@ -206,7 +206,7 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto pr-4 space-y-12">
+          <div className="hidden lg:flex flex-col flex-1 overflow-y-auto pr-4 space-y-12">
             {/* Situation */}
             <section>
               <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] mb-4" style={{ color: '#3A3A3F' }}>
@@ -240,7 +240,7 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
           </div>
 
           {/* Action Footer */}
-          <div className="pt-10 mt-auto border-t border-[#1E1E22]">
+          <div className="pt-6 lg:pt-10 mt-auto border-t border-[#1E1E22]">
             {!showEndConfirm ? (
               <button
                 onClick={() => setShowEndConfirm(true)}
@@ -273,11 +273,11 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
       </aside>
 
       {/* RIGHT PANEL: LIVE CHAT */}
-      <main className="flex-1 flex flex-col relative bg-[#0A0A0B]">
+      <main className="flex-1 flex flex-col relative bg-[#0A0A0B] min-h-0">
         <div className="absolute inset-0 noise-overlay opacity-20 pointer-events-none" />
         
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto px-12 pt-12 pb-6 relative z-10 scroll-smooth">
+        <div className="flex-1 overflow-y-auto px-4 md:px-12 pt-8 md:pt-12 pb-6 relative z-10 scroll-smooth">
           <div className="max-w-4xl mx-auto">
             {messages.map((msg, i) => (
               <MessageBubble
@@ -288,19 +288,19 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
             ))}
 
             {isTyping && !messages.some(m => m.streaming) && (
-              <div className="flex gap-5 mb-8">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#111113] border border-[#1E1E22] shadow-xl">
+              <div className="flex gap-4 md:gap-5 mb-8">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center bg-[#111113] border border-[#1E1E22] shadow-xl">
                   <TypingIndicator />
                 </div>
               </div>
             )}
 
             {error && (
-              <div className="flex flex-col items-center justify-center py-10 bg-[#FF4B1F08] border border-[#FF4B1F15] rounded-3xl mb-8">
-                <p className="text-orange-500 font-mono text-sm mb-4">{error}</p>
+              <div className="flex flex-col items-center justify-center py-6 md:py-10 bg-[#FF4B1F08] border border-[#FF4B1F15] rounded-3xl mb-8">
+                <p className="text-orange-500 font-mono text-xs md:text-sm mb-4 px-4 text-center">{error}</p>
                 <button
                   onClick={onRetry}
-                  className="px-6 py-2 bg-[#FF4B1F] text-white text-xs font-mono rounded-lg hover:brightness-110 transition-all"
+                  className="px-6 py-2 bg-[#FF4B1F] text-white text-[10px] md:text-xs font-mono rounded-lg hover:brightness-110 transition-all"
                 >
                   SYSTEM_RETRY
                 </button>
@@ -311,15 +311,15 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
         </div>
 
         {/* Input Area */}
-        <div className="px-12 py-10 relative z-20">
+        <div className="px-4 md:px-12 py-6 md:py-10 relative z-20">
           <div className="max-w-4xl mx-auto relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-orange-600/20 to-red-600/20 rounded-[32px] blur opacity-25 group-focus-within:opacity-100 transition-opacity duration-500" />
-            <div className="relative flex items-end gap-4 bg-[#111113] border border-[#1E1E22] rounded-[28px] p-4 shadow-2xl">
+            <div className="relative flex items-end gap-3 md:gap-4 bg-[#111113] border border-[#1E1E22] rounded-[28px] p-3 md:p-4 shadow-2xl">
               {/* Mic Button */}
               <button
                 onClick={toggleListening}
                 disabled={isTyping}
-                className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center shrink-0 transition-all duration-300 shadow-lg group/mic relative overflow-hidden`}
+                className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex flex-col items-center justify-center shrink-0 transition-all duration-300 shadow-lg group/mic relative overflow-hidden`}
                 style={{
                   background: isListening ? '#FF4B1F' : '#1E1E22',
                   boxShadow: isListening ? '0 0 20px #FF4B1F60' : 'none',
@@ -328,14 +328,14 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
                 {isListening && (
                   <div className="absolute inset-0 bg-white/20 animate-pulse" />
                 )}
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={isListening ? '#fff' : '#6B6B70'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="relative z-10">
+                <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke={isListening ? '#fff' : '#6B6B70'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="relative z-10">
                   <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
                   <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
                   <line x1="12" y1="19" x2="12" y2="23"></line>
                   <line x1="8" y1="23" x2="16" y2="23"></line>
                 </svg>
                 {isListening && (
-                   <span className="text-[8px] font-mono absolute bottom-1 text-white uppercase tracking-tighter animate-pulse">REC</span>
+                   <span className="text-[7px] md:text-[8px] font-mono absolute bottom-1 text-white uppercase tracking-tighter animate-pulse">REC</span>
                 )}
               </button>
 
@@ -344,14 +344,14 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
                 value={input}
                 onChange={handleTextareaChange}
                 onKeyDown={handleKeyDown}
-                placeholder={isListening ? "Listening..." : "Type your response..."}
+                placeholder={isListening ? "Listening..." : "Type response..."}
                 disabled={isTyping || isListening}
                 rows={1}
-                className="flex-1 bg-transparent border-none outline-none resize-none text-lg leading-relaxed py-2 px-2 placeholder:text-[#3A3A3F]"
+                className="flex-1 bg-transparent border-none outline-none resize-none text-base md:text-lg leading-relaxed py-2 px-1 md:px-2 placeholder:text-[#3A3A3F]"
                 style={{
                   color: '#E8E6E1',
                   minHeight: '44px',
-                  maxHeight: '200px',
+                  maxHeight: '150px',
                   fontFamily: 'DM Sans, sans-serif',
                 }}
               />
@@ -359,20 +359,20 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || isTyping || isListening}
-                className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-lg"
+                className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-lg"
                 style={{
                   background: input.trim() && !isTyping && !isListening ? '#FF4B1F' : '#1E1E22',
                   transform: input.trim() && !isTyping && !isListening ? 'scale(1)' : 'scale(0.95)',
                 }}
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !isTyping && !isListening ? '#fff' : '#3A3A3F'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !isTyping && !isListening ? '#fff' : '#3A3A3F'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13"></line>
                   <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
               </button>
             </div>
           </div>
-          <p className="text-center text-[10px] font-mono mt-4 tracking-[0.2em]" style={{ color: '#1E1E22' }}>
+          <p className="text-center text-[8px] md:text-[10px] font-mono mt-3 md:mt-4 tracking-[0.2em]" style={{ color: '#1E1E22' }}>
             TERMINAL ENCRYPTED // END-TO-END NEURAL LINK ACTIVE
           </p>
         </div>

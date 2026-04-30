@@ -22,7 +22,7 @@ export default function App() {
   } = useForge();
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0A0A0B' }}>
+    <div className="min-h-screen bg-[#0A0A0B]">
       {screen === 'home' && (
         <HomeScreen onStart={startScenario} />
       )}
