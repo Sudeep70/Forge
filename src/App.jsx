@@ -4,7 +4,6 @@ import HomeScreen from './screens/HomeScreen.jsx';
 import ScenarioScreen from './screens/ScenarioScreen.jsx';
 import DebriefScreen from './screens/DebriefScreen.jsx';
 import DashboardScreen from './screens/DashboardScreen.jsx';
-import History from './pages/History.jsx';
 
 export default function App() {
   const navigate = useNavigate();
@@ -36,7 +35,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0A0A0B]">
       <Routes>
-        <Route path="/history" element={<History onBack={() => { setScreen('home'); navigate('/'); }} />} />
         <Route path="/" element={
           <>
             {screen === 'home' && (
