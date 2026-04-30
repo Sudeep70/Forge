@@ -3,6 +3,7 @@ import { useForge } from './hooks/useForge.js';
 import HomeScreen from './screens/HomeScreen.jsx';
 import ScenarioScreen from './screens/ScenarioScreen.jsx';
 import DebriefScreen from './screens/DebriefScreen.jsx';
+import DashboardScreen from './screens/DashboardScreen.jsx';
 import History from './pages/History.jsx';
 
 export default function App() {
@@ -17,6 +18,8 @@ export default function App() {
     error,
     debriefError,
     user,
+    sessions,
+    isLoadingSessions,
     authError,
     startScenario,
     startCustomScenario,
@@ -41,10 +44,18 @@ export default function App() {
                 onStart={startScenario} 
                 onStartCustom={startCustomScenario}
                 user={user}
+                sessions={sessions}
                 login={login}
                 logout={logout}
                 authError={authError}
                 setScreen={setScreen}
+              />
+            )}
+
+            {screen === 'dashboard' && (
+              <DashboardScreen 
+                sessions={sessions}
+                onBack={() => setScreen('home')}
               />
             )}
 

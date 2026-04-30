@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
 import { scenarios } from '../data/scenarios.js';
 import CustomScenarioForm from '../components/CustomScenarioForm';
+import { calculateStats } from '../hooks/useForge';
 
 const intensityColor = {
   High: '#FF4B1F',
@@ -86,8 +86,10 @@ function ScenarioCard({ scenario, onStart }) {
   );
 }
 
-export default function HomeScreen({ onStart, onStartCustom, user, login, logout, authError, setScreen }) {
+export default function HomeScreen({ onStart, onStartCustom, user, sessions, login, logout, authError, setScreen }) {
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
+
+  const stats = useMemo(() => calculateStats(sessions), [sessions]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#0A0A0B' }}>
@@ -116,12 +118,19 @@ export default function HomeScreen({ onStart, onStartCustom, user, login, logout
             <div className="flex items-center gap-4 md:gap-8">
               {user ? (
                 <div className="flex items-center gap-4 md:gap-6">
-                  <Link 
-                    to="/history"
-                    className="text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] text-[#6B6B70] hover:text-[#FF4B1F] transition-colors"
+                  <button 
+                    onClick={() => setScreen('dashboard')}
+                    className="flex items-center gap-2 group"
                   >
-                    History
-                  </Link>
+                    <span className="text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] text-[#6B6B70] group-hover:text-[#FF4B1F] transition-colors">
+                      Profile
+                    </span>
+                    {sessions.length > 0 && (
+                      <span className="w-5 h-5 rounded-full bg-[#1E1E22] border border-[#3A3A3F] flex items-center justify-center text-[10px] font-mono text-[#FF4B1F] group-hover:border-[#FF4B1F33] transition-colors">
+                        {sessions.length}
+                      </span>
+                    )}
+                  </button>
                   <div className="flex items-center gap-3 pl-4 md:pl-6 border-l border-[#1E1E22]">
                     <div className="hidden sm:block text-right">
                       <p className="text-[10px] font-mono text-[#E8E6E1] leading-none mb-1 capitalize">{user.email.split('@')[0]}</p>
@@ -154,6 +163,30 @@ export default function HomeScreen({ onStart, onStartCustom, user, login, logout
             )}
           </div>
         </nav>
+
+        {/* Welcome Banner */}
+        {user && stats && (
+          <div className="mb-10 fade-up">
+            <div className="bg-[#111113] border border-[#1E1E22] rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-[#FF4B1F]" />
+              <div className="relative z-10">
+                <p className="text-[10px] font-mono text-[#3A3A3F] uppercase tracking-[0.3em] mb-2">Neural_Link_Established</p>
+                <h2 className="text-xl md:text-2xl font-display text-[#E8E6E1] tracking-wide">
+                  WELCOME BACK — YOU'VE COMPLETED <span className="text-[#FF4B1F]">{stats.totalSessions}</span> SCENARIOS.
+                </h2>
+                <p className="text-sm text-[#6B6B70] mt-1">
+                  Your judgment profile is evolving. Current strongest trait: <span className="text-[#E8E6E1] font-mono uppercase tracking-tighter">{stats.strongestTrait} ({stats.strongestScore}%)</span>
+                </p>
+              </div>
+              <button 
+                onClick={() => setScreen('dashboard')}
+                className="relative z-10 px-6 py-3 bg-[#1E1E22] border border-[#3A3A3F] rounded-xl text-[10px] font-mono text-[#E8E6E1] uppercase tracking-widest hover:bg-[#FF4B1F] hover:border-[#FF4B1F] transition-all"
+              >
+                View_Full_Profile
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Hero */}
         <div className="pt-10 md:pt-20 pb-16 md:pb-24 grid lg:grid-cols-2 items-center gap-12 lg:gap-20">

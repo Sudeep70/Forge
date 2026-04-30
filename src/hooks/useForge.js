@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { sendMessage, generateDebrief } from '../lib/ai';
 import { getScenario } from '../data/scenarios';
-import supabase from '../lib/supabase';
+import supabase, { saveSession } from '../lib/supabase';
 
 /**
  * useForge — central state machine for the Forge app
@@ -17,15 +17,37 @@ export function useForge() {
   const [error, setError] = useState(null);
   const [debriefError, setDebriefError] = useState(null);
   const [user, setUser] = useState(null);
+  const [sessions, setSessions] = useState([]);
   const [isDemo, setIsDemo] = useState(localStorage.getItem("demo_user") === "true");
   const [authError, setAuthError] = useState(null);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
   const streamingRef = useRef(false);
+
+  const fetchSessions = useCallback(async (userId) => {
+    if (!userId) return;
+    setIsLoadingSessions(true);
+    try {
+      const { data, error } = await supabase
+        .from('scenario_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('completed_at', { ascending: false });
+      
+      if (error) throw error;
+      setSessions(data || []);
+    } catch (err) {
+      console.error('Error fetching sessions:', err);
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUser(user);
         setAuthError(null);
+        fetchSessions(user.id);
       } else if (isDemo) {
         setUser({ email: 'demo@forge.ai', user_metadata: { avatar_url: null } });
         setAuthError(null);
@@ -38,10 +60,11 @@ export function useForge() {
         setIsDemo(false);
         setAuthError(null); // Clear errors on login
         localStorage.removeItem("demo_user");
+        fetchSessions(session.user.id);
       }
     });
     return () => subscription.unsubscribe();
-  }, [isDemo]);
+  }, [isDemo, fetchSessions]);
 
   const login = async () => {
     setAuthError(null);
@@ -232,7 +255,7 @@ export function useForge() {
       await Promise.race([
         sendMessage(
           apiMessages,
-          activeScenario.systemPrompt,
+          `STRICT CHARACTER RULE: You may ONLY play the characters listed in THIS scenario. Do not use characters from any other scenario. The only valid characters right now are: [${activeScenario.characters.map(c => c.name).join(', ')}].\n\n${activeScenario.systemPrompt}`,
           (delta) => {
             streamedText += delta;
             // Parse character on first chunk that contains the bracket
@@ -284,21 +307,27 @@ export function useForge() {
       setDebrief(result);
 
       // SAVE TO SUPABASE
-      if (user) {
-        await supabase.from('simulations').insert([{
-          user_id: user.id,
-          scenario: activeScenario?.title || 'Unknown',
-          conversation: messages,
-          scores: result.scores,
-          report: result
-        }]);
+      if (user && !isDemo) {
+        try {
+          await saveSession(
+            result, 
+            activeScenario.id, 
+            activeScenario.title, 
+            messages.length
+          );
+          // Refresh sessions list
+          fetchSessions(user.id);
+        } catch (err) {
+          console.error('Failed to save session:', err);
+          // Silently fail as requested
+        }
       }
     } catch (err) {
       setDebriefError(err.message || 'Failed to generate your Growth Report. Please try again.');
     } finally {
       setIsGeneratingDebrief(false);
     }
-  }, [messages, user, activeScenario]);
+  }, [messages, user, activeScenario, isDemo, fetchSessions]);
 
   const retryDebrief = useCallback(async () => {
     if (!messages.length) return;
@@ -354,7 +383,9 @@ export function useForge() {
     error,
     debriefError,
     user,
+    sessions,
     authError,
+    isLoadingSessions,
     // Actions
     login,
     logout,
@@ -366,5 +397,33 @@ export function useForge() {
     retryLastMessage,
     resetApp,
     setScreen,
+  };
+}
+
+// Helper to calculate average scores
+export function calculateStats(sessions) {
+  if (!sessions.length) return null;
+
+  const traits = [
+    { key: 'score_transparency', label: 'Transparency' },
+    { key: 'score_decisiveness', label: 'Decisiveness' },
+    { key: 'score_empathy', label: 'Empathy' },
+    { key: 'score_risk_awareness', label: 'Risk Awareness' },
+    { key: 'score_integrity', label: 'Integrity' },
+  ];
+
+  const averages = traits.reduce((acc, trait) => {
+    const sum = sessions.reduce((s, sess) => s + (sess[trait.key] || 0), 0);
+    acc[trait.label] = Math.round(sum / sessions.length);
+    return acc;
+  }, {});
+
+  const strongestTrait = Object.entries(averages).reduce((a, b) => a[1] > b[1] ? a : b);
+
+  return {
+    averages,
+    totalSessions: sessions.length,
+    strongestTrait: strongestTrait[0],
+    strongestScore: strongestTrait[1],
   };
 }
