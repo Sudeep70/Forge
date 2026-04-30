@@ -1,6 +1,11 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import Groq from "groq-sdk";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
+});
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -171,59 +176,52 @@ app.post('/api/chat', async (req, res) => {
 app.post('/api/debrief', async (req, res) => {
   const { conversationHistory } = req.body;
 
-  // 1. Calculate Heuristic Scores
+  // 1. Calculate Heuristic Scores (Always computed)
   const heuristicReport = createFallbackReport(conversationHistory);
   const scores = heuristicReport.scores;
 
-  const conversationText = conversationHistory
-    .map(m => `${m.role === 'user' ? 'USER' : 'CHARACTER'}: ${m.content}`)
-    .join('\n');
-
-  const analysisPrompt = `Analyze the following high-stakes leadership simulation and provide a professional performance evaluation. 
-TONE: Direct, analytical, slightly intense. No motivational fluff.
-Return ONLY valid JSON in this exact structure:
-{
-  "style": "Title — followed by a sharp 1-line interpretation",
-  "key_moment": "The single most revealing decision pattern shown.",
-  "blind_spot": "What the user is NOT seeing.",
-  "strength": "One specific behavioral asset demonstrated.",
-  "growth_edge": "The 'Hard Truth' insight only.",
-  "impact_warning": "The real-world consequence only if this had been a live situation."
-}
-
-CONVERSATION:
-${conversationText}`;
-
   try {
-    console.log("TRYING GEMINI API...");
-    if (!GEMINI_API_KEY) throw new Error("No API Key");
+    if (process.env.GROQ_API_KEY) {
+      console.log("TRYING GROQ API...");
+      
+      const response = await groq.chat.completions.create({
+        model: "llama3-70b-8192",
+        messages: [
+          {
+            role: "system",
+            content: `You analyze leadership decisions. 
+            Return ONLY valid JSON in this exact structure:
+            {
+              "style": "Title — followed by a sharp 1-line interpretation",
+              "key_moment": "The single most revealing decision pattern shown.",
+              "blind_spot": "What the user is NOT seeing.",
+              "strength": "One specific behavioral asset demonstrated.",
+              "growth_edge": "The 'Hard Truth' insight only.",
+              "impact_warning": "The real-world consequence only if this had been a live situation."
+            }`
+          },
+          {
+            role: "user",
+            content: JSON.stringify(conversationHistory)
+          }
+        ]
+      });
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: analysisPrompt }] }]
-      }),
-    });
+      const aiText = response.choices[0].message.content;
+      const cleaned = aiText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const aiAnalysis = JSON.parse(cleaned);
 
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
-
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error("Empty response");
-
-    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const aiAnalysis = JSON.parse(cleaned);
-    
-    console.log("SOURCE: API (Analysis) + Heuristic (Scores)");
-    return res.json({
-      ...aiAnalysis,
-      scores // Overwrite or include computed scores
-    });
-
+      console.log("SOURCE: GROQ API");
+      return res.json({
+        ...aiAnalysis,
+        scores
+      });
+    } else {
+      console.log("NO GROQ KEY → USING FALLBACK");
+      throw new Error("No Groq API Key provided");
+    }
   } catch (err) {
-    console.log("DEBRIEF API FAILED:", err.message);
-    console.log("FULL ERROR:", err);
+    console.log("GROQ FAILED:", err.message);
     console.log("USING DEBRIEF FALLBACK");
     return res.json(heuristicReport);
   }

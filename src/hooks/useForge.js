@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { sendMessage, generateDebrief } from '../lib/ai';
 import { getScenario } from '../data/scenarios';
+import supabase from '../lib/supabase';
 
 /**
  * useForge — central state machine for the Forge app
@@ -15,7 +16,25 @@ export function useForge() {
   const [debrief, setDebrief] = useState(null);
   const [error, setError] = useState(null);
   const [debriefError, setDebriefError] = useState(null);
+  const [user, setUser] = useState(null);
   const streamingRef = useRef(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = async () => {
+    await supabase.auth.signInWithOAuth({ provider: 'google' });
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setScreen('home');
+  };
 
   // Parse character name from response like "[Alex] Some message..."
   const parseCharacter = useCallback((text, scenario) => {
@@ -178,12 +197,23 @@ export function useForge() {
     try {
       const result = await generateDebrief(apiMessages);
       setDebrief(result);
+
+      // SAVE TO SUPABASE
+      if (user) {
+        await supabase.from('simulations').insert([{
+          user_id: user.id,
+          scenario: activeScenario?.title || 'Unknown',
+          conversation: messages,
+          scores: result.scores,
+          report: result
+        }]);
+      }
     } catch (err) {
       setDebriefError(err.message || 'Failed to generate your Growth Report. Please try again.');
     } finally {
       setIsGeneratingDebrief(false);
     }
-  }, [messages]);
+  }, [messages, user, activeScenario]);
 
   const retryDebrief = useCallback(async () => {
     if (!messages.length) return;
@@ -238,7 +268,10 @@ export function useForge() {
     debrief,
     error,
     debriefError,
+    user,
     // Actions
+    login,
+    logout,
     startScenario,
     startCustomScenario,
     sendUserMessage,
@@ -246,5 +279,6 @@ export function useForge() {
     retryDebrief,
     retryLastMessage,
     resetApp,
+    setScreen,
   };
 }
