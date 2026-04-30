@@ -69,18 +69,58 @@ export default function History({ onBack }) {
             </p>
 
             <div className="space-y-6">
-              <div>
-                <h3 className="text-xs font-mono uppercase tracking-[0.2em] text-[#FF4B1F] mb-3">Scores</h3>
-                <pre className="text-green-400 text-xs font-mono bg-[#0A0A0B] p-4 rounded-xl border border-[#1E1E22] overflow-x-auto">
-                  {JSON.stringify(selected.scores, null, 2)}
-                </pre>
+              {/* Visual Scores */}
+              <div className="bg-[#0A0A0B] p-6 rounded-2xl border border-[#1E1E22]">
+                <h3 className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#3A3A3F] mb-6">Judgment_Metrics</h3>
+                <div className="space-y-4">
+                  {Object.entries(selected.scores || {}).map(([key, val]) => (
+                    <div key={key}>
+                      <div className="flex justify-between text-[10px] font-mono uppercase tracking-widest mb-2">
+                        <span className="text-[#6B6B70]">{key.replace('_', ' ')}</span>
+                        <span className="text-[#E8E6E1]">{val}%</span>
+                      </div>
+                      <div className="h-1 bg-[#1E1E22] rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-[#FF4B1F] transition-all duration-1000" 
+                          style={{ width: `${val}%` }} 
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div>
-                <h3 className="text-xs font-mono uppercase tracking-[0.2em] text-[#3b82f6] mb-3">Report</h3>
-                <pre className="text-blue-300 text-xs font-mono bg-[#0A0A0B] p-4 rounded-xl border border-[#1E1E22] overflow-x-auto whitespace-pre-wrap">
-                  {JSON.stringify(selected.report, null, 2)}
-                </pre>
+              {/* Analysis Sections */}
+              <div className="grid gap-4">
+                <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-orange-500/20 transition-colors">
+                  <h3 className="text-orange-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Leadership Style</h3>
+                  <p className="text-sm leading-relaxed text-[#E8E6E1]">{selected.report.style}</p>
+                </div>
+
+                <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-green-500/20 transition-colors">
+                  <h3 className="text-green-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Core Strength</h3>
+                  <p className="text-sm leading-relaxed text-[#E8E6E1]">{selected.report.strength}</p>
+                </div>
+
+                <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-red-500/20 transition-colors">
+                  <h3 className="text-red-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Blind Spot</h3>
+                  <p className="text-sm leading-relaxed text-[#E8E6E1]">{selected.report.blind_spot}</p>
+                </div>
+
+                <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-blue-500/20 transition-colors">
+                  <h3 className="text-blue-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Key Moment</h3>
+                  <p className="text-sm leading-relaxed text-[#E8E6E1]">{selected.report.key_moment}</p>
+                </div>
+
+                <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-purple-500/20 transition-colors">
+                  <h3 className="text-purple-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Growth Edge</h3>
+                  <p className="text-sm leading-relaxed text-[#E8E6E1]">{selected.report.growth_edge}</p>
+                </div>
+
+                <div className="p-5 border border-[#1E1E22] rounded-2xl bg-[#0A0A0B] hover:border-yellow-500/20 transition-colors">
+                  <h3 className="text-yellow-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-3">Impact Warning</h3>
+                  <p className="text-sm leading-relaxed text-[#E8E6E1] font-medium">{selected.report.impact_warning}</p>
+                </div>
               </div>
             </div>
 
