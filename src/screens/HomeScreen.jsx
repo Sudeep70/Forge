@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { scenarios } from '../data/scenarios.js';
+import CustomScenarioForm from '../components/CustomScenarioForm';
 
 const intensityColor = {
   High: '#FF4B1F',
@@ -83,9 +85,8 @@ function ScenarioCard({ scenario, onStart }) {
   );
 }
 
-export default function HomeScreen({ onStart }) {
-  return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#0A0A0B' }}>
+export default function HomeScreen({ onStart, onStartCustom }) {
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
       <div className="fixed inset-0 noise-overlay opacity-60 pointer-events-none" />
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.03]"
@@ -131,10 +132,25 @@ export default function HomeScreen({ onStart }) {
               <span style={{ color: '#FF4B1F' }}>UNDER PRESSURE.</span>
             </h1>
 
-            <p className="text-base md:text-xl leading-relaxed max-w-lg" style={{ color: '#6B6B70' }}>
+            <p className="text-base md:text-xl leading-relaxed max-w-lg mb-10" style={{ color: '#6B6B70' }}>
               Drop into pressure-cooker scenarios with AI characters that react to every word you say. 
               No guidance. No multiple choice. Just you, your instincts, and the fallout.
             </p>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={() => document.getElementById('scenarios-section').scrollIntoView({ behavior: 'smooth' })}
+                className="px-8 py-4 bg-[#FF4B1F] text-white rounded-xl font-mono text-sm uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-orange-900/20"
+              >
+                Browse Scenarios
+              </button>
+              <button
+                onClick={() => setIsCustomModalOpen(true)}
+                className="px-8 py-4 border border-[#1E1E22] text-[#E8E6E1] rounded-xl font-mono text-sm uppercase tracking-widest hover:bg-[#1E1E22] transition-all"
+              >
+                Create Custom Scenario
+              </button>
+            </div>
           </div>
 
           <div className="hidden lg:block relative">
@@ -153,7 +169,7 @@ export default function HomeScreen({ onStart }) {
         </div>
 
         {/* Scenarios Header */}
-        <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12">
+        <div id="scenarios-section" className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12">
           <span className="text-xs md:text-sm font-mono uppercase tracking-[0.3em]" style={{ color: '#3A3A3F' }}>
             Available Scenarios
           </span>
@@ -205,6 +221,16 @@ export default function HomeScreen({ onStart }) {
           </div>
         </footer>
       </div>
+
+      {isCustomModalOpen && (
+        <CustomScenarioForm 
+          onSubmit={(data) => {
+            setIsCustomModalOpen(false);
+            onStartCustom(data);
+          }}
+          onCancel={() => setIsCustomModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

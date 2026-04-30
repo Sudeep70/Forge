@@ -14,6 +14,7 @@ export default function App() {
     error,
     debriefError,
     startScenario,
+    startCustomScenario,
     sendUserMessage,
     endScenario,
     retryDebrief,
@@ -24,7 +25,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0A0A0B]">
       {screen === 'home' && (
-        <HomeScreen onStart={startScenario} />
+        <HomeScreen onStart={startScenario} onStartCustom={startCustomScenario} />
       )}
 
       {screen === 'scenario' && (

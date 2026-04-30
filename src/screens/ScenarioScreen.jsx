@@ -89,7 +89,7 @@ export default function ScenarioScreen({ scenario, messages, isTyping, error, on
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(scenario?.timeLimit || 60);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const textareaRef = useRef(null);

@@ -50,6 +50,44 @@ export function useForge() {
     setScreen('scenario');
   }, []);
 
+  const startCustomScenario = useCallback((customData) => {
+    const { title, description, stake, timeLimit } = customData;
+    
+    // Create a scenario object that matches the expected structure
+    const customScenario = {
+      id: `custom-${Date.now()}`,
+      title,
+      subtitle: `Stakes: ${stake}`,
+      setup: description,
+      intensity: stake,
+      timeLimit: parseInt(timeLimit),
+      characters: [
+        { id: 'stakeholder', name: 'Stakeholder', role: 'Decision Maker', initial: 'S', color: '#FF4B1F' }
+      ],
+      systemPrompt: `You are a high-stakes decision simulator. 
+        CONTEXT: ${description}
+        STAKES: ${stake}
+        Your goal is to pressure the user to make a choice. 
+        Start with a direct challenge as a senior stakeholder.
+        Always prefix your messages with [Stakeholder].`,
+      openingMessage: {
+        character: 'Stakeholder',
+        characterId: 'stakeholder',
+        content: `[Stakeholder] You’re facing the situation: ${description}. We need to decide now. What's your move?`
+      }
+    };
+
+    setActiveScenario(customScenario);
+    setError(null);
+    setMessages([{
+      role: 'assistant',
+      content: customScenario.openingMessage.content,
+      character: 'Stakeholder',
+      characterId: 'stakeholder',
+    }]);
+    setScreen('scenario');
+  }, []);
+
   const sendUserMessage = useCallback(async (userText) => {
     if (!userText.trim() || isTyping || streamingRef.current) return;
     if (!activeScenario) return;
@@ -202,6 +240,7 @@ export function useForge() {
     debriefError,
     // Actions
     startScenario,
+    startCustomScenario,
     sendUserMessage,
     endScenario,
     retryDebrief,
