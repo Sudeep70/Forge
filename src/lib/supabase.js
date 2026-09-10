@@ -16,23 +16,30 @@ export async function saveSession(debriefData, scenarioId, scenarioTitle, turnCo
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  // debriefData comes straight from POST /api/debrief, which returns
+  // snake_case fields (see server.js): style, key_moment, blind_spot,
+  // strength, growth_edge, scores.{transparency,decisiveness,empathy,
+  // risk_awareness,integrity}. "style" is "Name — one-line description".
+  const [overallStyle, styleDescription] = (debriefData.style || '').split(' — ');
+  const scores = debriefData.scores || {};
+
   const { data, error } = await supabase
     .from('scenario_sessions')
     .insert([{
       user_id: user.id,
       scenario_id: scenarioId,
       scenario_title: scenarioTitle,
-      overall_style: debriefData.overallStyle,
-      style_description: debriefData.styleDescription,
-      score_transparency: debriefData.scores.transparency,
-      score_decisiveness: debriefData.scores.decisiveness,
-      score_empathy: debriefData.scores.empathy,
-      score_risk_awareness: debriefData.scores.riskAwareness,
-      score_integrity: debriefData.scores.integrity,
-      key_moment: debriefData.keyMoment,
-      blind_spot: debriefData.blindSpot,
+      overall_style: overallStyle || null,
+      style_description: styleDescription || null,
+      score_transparency: scores.transparency,
+      score_decisiveness: scores.decisiveness,
+      score_empathy: scores.empathy,
+      score_risk_awareness: scores.risk_awareness,
+      score_integrity: scores.integrity,
+      key_moment: debriefData.key_moment,
+      blind_spot: debriefData.blind_spot,
       strength: debriefData.strength,
-      growth_edge: debriefData.growthEdge,
+      growth_edge: debriefData.growth_edge,
       conversation_turns: turnCount
     }])
     .select();
